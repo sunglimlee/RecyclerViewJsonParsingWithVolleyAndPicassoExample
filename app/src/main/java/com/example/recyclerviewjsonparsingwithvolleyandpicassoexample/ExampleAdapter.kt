@@ -12,9 +12,18 @@ import com.squareup.picasso.Picasso
 
 // Context 를 맨처음부터 받아와야 한다. 만약 안받아오면 this@MainAcitivty로 해도 되기는 하지만 객체지향에 맞지 않잖아..
 class ExampleAdapter(var mContext : Context, var mExampleList : ArrayList<ExampleItem>) : Adapter<ExampleAdapter.ExampleViewHolder>() {
+    lateinit var mListener : OnExampleClickListener
 
+    fun setOnExampleClickListener(listener : ExampleAdapter.OnExampleClickListener) {
+        mListener = listener
+    }
+    interface OnExampleClickListener { //나만의 클릭리스너를 만든다.
+        fun onclick(position: Int) {
+
+        }
+    }
     //자동으로
-    class ExampleViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class ExampleViewHolder : RecyclerView.ViewHolder {
         //지금 헷갈리는 부분이 아답타와 홀더의 관계인데.. itemView 를 가지고 있으니깐.. 생성자에서 만들었나?
         //ㅎㅎㅎㅎㅎㅎ 맞네.. 생성자에서 만들었네.. init 에서
         val mImageView : ImageView = itemView.findViewById(R.id.image_view)
@@ -22,6 +31,17 @@ class ExampleAdapter(var mContext : Context, var mExampleList : ArrayList<Exampl
         val mTextViewLikes : TextView = itemView.findViewById(R.id.text_view_like)
         // 이제는 init 도 제거시키고 바로 itemView.findViewById() 를 넣어줬다. 가능하고..
         // 이제 연결되어 있으니간 이 클래스를 사용할 때 해당 멤버 변수(and 함수)를 쓰면 되는거지..
+        constructor(itemView : View, listener: OnExampleClickListener) : super(itemView) {
+            itemView.setOnClickListener {
+                if (listener != null) {
+                    val position : Int = this.adapterPosition //각각의 ViewHolder는 adapterPostion이 있다.
+                    //따라서 viewHolder의 생성자에서 사용할 수 있다.
+                    if (position != RecyclerView.NO_POSITION) {
+                        listener.onclick(position)
+                    }
+                }
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ExampleViewHolder {
@@ -31,7 +51,7 @@ class ExampleAdapter(var mContext : Context, var mExampleList : ArrayList<Exampl
         //객체를 생성해야 멤버 변수(함수)를 사용할 수 있잖아.. 그리고 만든 view를 인자로 넣어주어야 하는거고..
         //그래야 들어온 인자를 이용해서 값들을 연결 시킬수 있는거고..
         // return v as ExampleViewHolder  (x)
-        return ExampleViewHolder(v)
+        return ExampleViewHolder(v, mListener)
     }
 
     override fun onBindViewHolder(holder: ExampleViewHolder, position: Int) {

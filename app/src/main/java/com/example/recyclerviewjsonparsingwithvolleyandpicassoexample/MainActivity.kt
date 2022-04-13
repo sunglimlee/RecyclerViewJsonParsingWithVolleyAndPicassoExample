@@ -1,7 +1,9 @@
 package com.example.recyclerviewjsonparsingwithvolleyandpicassoexample
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.RequestQueue
@@ -16,6 +18,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mExampleList : ArrayList<ExampleItem>
     private lateinit var mExampleAdapter : ExampleAdapter // 이게 밖에 있어야 하는 이유는 뭘까?
 
+    companion object {
+        const val IMAGEVIEW_MAINACTIVITY2 = "imageview_mainactivity2"
+        const val TEXTVIEW1_MAINACTIVITY2 = "textview1_mainactivity2"
+        const val TEXTVIEW2_MAINACTIVITY2 = "textview2_mainactivity2"
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -23,6 +30,28 @@ class MainActivity : AppCompatActivity() {
         mQueue = Volley.newRequestQueue(this)
         jasonParse()
         buildRecyclerView()
+        addExampleClickListener()
+    }
+
+    private fun addExampleClickListener() {
+        mExampleAdapter.setOnExampleClickListener(object : ExampleAdapter.OnExampleClickListener {
+            override fun onclick(position : Int) {
+                val intent = Intent(this@MainActivity, MainActivity2::class.java)
+                //1. 각각의 값을 받아서 Intent에 넘겨주기로 한다.
+                val imageview : String = mExampleList[position].getImageUrl()
+                val textview1 : String = mExampleList[position].getCreator()
+                val textview2 : String = mExampleList[position].getLikecount()
+                //Toast.makeText(this@MainActivity, textview1, Toast.LENGTH_LONG).show()
+                //이거 다틀린거다. 왜냐면 startActivity에서 쓰이는 bundle은 animation같은 ActivityOptions class
+                //를 상속받아서 사용하는거다. 그래서 일반 bundle을 넘기고 싶으면 그냥 putExtra로 넘겨라.
+                val bundle : Bundle = Bundle()
+                bundle.putString(IMAGEVIEW_MAINACTIVITY2, imageview)
+                bundle.putString(TEXTVIEW1_MAINACTIVITY2, textview1)
+                bundle.putString(TEXTVIEW2_MAINACTIVITY2, textview2)
+                intent.putExtras(bundle)
+                startActivity(intent);
+            }
+        })
     }
 
     private fun buildRecyclerView() {
